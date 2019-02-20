@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "921028901624",
+    "firebase_url": "https://prerequisiteapp.firebaseio.com",
+    "project_id": "prerequisiteapp",
+    "storage_bucket": "prerequisiteapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921028901624:android:695bebe22f778195",
+        "android_client_info": {
+          "package_name": "com.package.cogent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "921028901624-m0ta532326ava5odqmte4ioq6qovdvmp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNczhVLuFM-RjDvJJHpY-nijUEbKlQGCI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
