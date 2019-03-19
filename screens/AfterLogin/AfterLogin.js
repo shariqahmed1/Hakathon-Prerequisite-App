@@ -7,7 +7,7 @@ import { FIREBASE_DATABASE } from '../../constants/Firebase';
 import { ListItem, Icon } from 'react-native-elements';
 import { SinglePickerMaterialDialog } from 'react-native-material-dialog';
 import { connect } from 'react-redux';
-import { updateUser, isAccountCreate } from '../../redux/actions/actions';
+import { updateUser, isAccountCreate, services } from '../../redux/actions/actions';
 import { Location, Permissions } from 'expo';
 
 class AfterLogin extends React.Component {
@@ -17,7 +17,7 @@ class AfterLogin extends React.Component {
             getLocation: false,
             isLoading: false,
             isLogin: this.props.isLogin,
-            userData: this.propsuserData,
+            userData: this.props.userData,
             isAccountCreate: this.props.isAccountCreate,
             image: '',
             phoneNumber: "",
@@ -27,9 +27,7 @@ class AfterLogin extends React.Component {
                 selected: true,
                 value: "None",
             },
-            services: [{
-                serviceName: 'None'
-            }],
+            services: undefined,
             location: undefined
         };
     }
@@ -38,7 +36,8 @@ class AfterLogin extends React.Component {
         return {
             isLogin: nextProps.isLogin,
             userData: nextProps.userData,
-            isAccountCreate: nextProps.isAccountCreate
+            isAccountCreate: nextProps.isAccountCreate,
+            services: nextProps.services
         };
     };
 
@@ -46,16 +45,12 @@ class AfterLogin extends React.Component {
         title: 'Cogent',
     };
 
-    componentDidMount() {
-        this._fetchServices();
-    };
-
 
     _getLocationAsync = async () => {
         this.setState({
             isLoading: true,
         })
-
+        
         let check = await Location.hasServicesEnabledAsync();
         if (!check) {
             ToastAndroid.show('Please enable location service', ToastAndroid.SHORT);
@@ -74,31 +69,23 @@ class AfterLogin extends React.Component {
             ToastAndroid.show('Permission denied, Try again !', ToastAndroid.SHORT);
         }
 
-        let location = await Location.getCurrentPositionAsync({});
-        let getData = await Location.reverseGeocodeAsync(location.coords);
-
-        this.setState({
-            location: {
-                coords: location.coords,
-                data: getData,
-            },
-            isLoading: false,
-            getLocation: true,
-        })
-    };
-
-    _fetchServices = () => {
-        let { services } = this.state;
-
-        FIREBASE_DATABASE.ref('services').on('value', snap => {
-            services = [{ serviceName: 'None' }];
-            snap.forEach(snapshot => {
-                services.push(snapshot.val())
+        try{
+            let location = await Location.getCurrentPositionAsync({});
+            let getData = await Location.reverseGeocodeAsync(location.coords);
+    
+            this.setState({
+                location: {
+                    coords: location.coords,
+                    data: getData,
+                },
+                isLoading: false,
+                getLocation: true,
             })
-            this.setState({ services })
-        })
+        }
+        catch(e){
+            console.log(e.message)
+        }
     };
-
 
     _saveInDatabase = (image, phoneNumber, service) => {
         const { userData, location } = this.state;
@@ -109,7 +96,8 @@ class AfterLogin extends React.Component {
             isAccountCreate: true,
             location
         }).then(() => {
-            this.props.onDispatchIsAccountCreate(true)
+            this._addCity(location.data[0].city);
+            this.props.onDispatchIsAccountCreate(true);
             this.props.onDispatchUpdateUser(userData.id);
 
         }).catch(err => console.log(err.message))
@@ -133,6 +121,16 @@ class AfterLogin extends React.Component {
             this.props.navigation.dispatch(RESET_ROUTE('Home'))
         }).catch(err => console.log(err.message))
     };
+
+    _addCity = (city) => {
+        FIREBASE_DATABASE.ref('cities').orderByChild('cityName').equalTo(city).once('value', snap => {
+            if(snap.exists()){
+            }
+            else{
+                FIREBASE_DATABASE.ref('cities').push({ cityName:city })
+            }
+        })
+    }
 
     _pickImage = () => {
         PICK_IMAGE().then((res) => this.setState({
@@ -162,7 +160,7 @@ class AfterLogin extends React.Component {
         return (
             <SinglePickerMaterialDialog
                 title={'Choose Service'}
-                items={services.map((row, index) => ({ value: row.serviceName, label: row.serviceName }))}
+                items={services.map((row, index) => ({ value: row.value === "Any" ? "None" : row.value, label: row.label === "Any" ? "None" : row.label }))}
                 visible={this.state.visible}
                 scrolled
                 colorAccent="#009588"
@@ -365,12 +363,14 @@ const mapStateToProps = (state) => {
         userData: state.AuthReducer.user,
         isLogin: state.AuthReducer.isLogin,
         isAccountCreate: state.AuthReducer.isAccountCreate,
+        services: state.AuthReducer.services,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
         onDispatchUpdateUser: (id) => dispatch(updateUser(id)),
+        onDispatchServices: (data) => dispatch(services(data)),
         onDispatchIsAccountCreate: (flag) => dispatch(isAccountCreate(flag)),
     }
 }

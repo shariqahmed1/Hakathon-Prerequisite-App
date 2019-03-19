@@ -9,6 +9,15 @@ const reducer = (state = {}, action) => {
         case "IS_ACCOUNT_CREATE":{
             return {...state, isAccountCreate : action.isAccountCreate}
         }
+        case "GET_SERVICES":{
+            return {...state, services : action.services}
+        }
+        case "GET_CITIES":{
+            return {...state, cities : action.cities}
+        }
+        case "GET_FILTERS":{
+            return {...state, filter : action.filter}
+        }
         default: {
             return state;
         }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, AppRegistry } from 'react-native';
 import { AppLoading, Asset, Font, Icon } from 'expo';
-import AppNavigator from './navigation/AppNavigator';
+import { AppStackNavigator } from './navigation/AppNavigator';
 import { Provider } from 'react-redux';
 import { store, persistor } from './redux/store/store';
 import { PersistGate } from 'redux-persist/integration/react'
@@ -26,12 +26,9 @@ export default class App extends React.Component {
         <View style={styles.container}>
           <StatusBar backgroundColor="#009588"  barStyle="light-content"  />
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          {/* {
-            AppRegistry.registerComponent('cogent', () => <AppNavigator />)
-          } */}
           <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>
-                <AppNavigator />
+                <AppStackNavigator />
               </PersistGate>
           </Provider>
         </View>

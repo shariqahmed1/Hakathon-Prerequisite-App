@@ -6,7 +6,7 @@ import { Button as NativeBaseButton, Text as NativeBaseText, Icon as NativeBaseI
 import { FIREBASE_DATABASE } from '../../constants/Firebase';
 import { RESET_ROUTE } from '../../constants/Functions';
 import { connect } from 'react-redux';
-import { updateUser, isLogin, getUserDetails } from '../../redux/actions/actions';
+import { updateUser, isLogin, getUserDetails, services, cities } from '../../redux/actions/actions';
 
 class Login extends React.Component {
   constructor(props) {
@@ -31,11 +31,35 @@ class Login extends React.Component {
 
   componentDidMount(){
     const { isLogin, isAccountCreate } = this.state;
+    this._fetchAllServices();
+    this._fetchAllCities();
+
     if(isLogin){
       isAccountCreate ? 
        this.props.navigation.dispatch(RESET_ROUTE('Home')) :
        this.props.navigation.dispatch(RESET_ROUTE('AfterLogin'));
     }
+  }
+
+  
+ _fetchAllServices = () => {
+    FIREBASE_DATABASE.ref('services').on('value', snap => {
+        var arr = [{ label:"Any", value:"Any" }];
+        snap.forEach(snapshot => {
+            arr.push({ label:snapshot.val().serviceName, value:snapshot.val().serviceName  })
+        })
+        this.props.onDispatchServices(arr);
+    })
+  }
+
+  _fetchAllCities = () => {
+    FIREBASE_DATABASE.ref('cities').on('value', snap => {
+        var arr = [{ label:"Any", value:"Any" }];
+        snap.forEach(snapshot => {
+            arr.push({ label:snapshot.val().cityName, value:snapshot.val().cityName  })
+        })
+        this.props.onDispatchCities(arr);
+    })
   }
 
   _googleSignIn = async () => {
@@ -124,12 +148,12 @@ class Login extends React.Component {
           </NativeBaseButton>
         </View>
         
-        <View style={styles.btnWrapper}>
+        {/* <View style={styles.btnWrapper}>
           <NativeBaseButton style={{ width:250 }} iconLeft block bordered light onPress={this._googleSignIn}>
             <NativeBaseIcon  name="logo-google"/>
             <NativeBaseText>Login with Google</NativeBaseText>
           </NativeBaseButton>
-        </View>
+        </View> */}
       </View>
     );
   }
@@ -137,18 +161,16 @@ class Login extends React.Component {
   _Wrapper = () => {
     return(
       <View style={styles.wrapper}>
-        <View style={styles.innerWrapper}>
+        <View style={[styles.innerWrapper, { backgroundColor:'#262726' }]}>
           <View style={styles.subInnerWrapper}>
             <Image style={styles.logo} source={require('../../images/logo.png')}/>
           </View>
         </View>
 
-        <View style={styles.innerWrapper}>
-          <ImageBackground source={{uri:'http://papers.co/wallpaper/papers.co-sb08-wallpaper-pastel-music-green-blur-23-wallpaper.jpg'}} style={{ width: '100%', height: '100%' }}>
+        <View style={[styles.innerWrapper, { backgroundColor:'#262726' }]}>
             {
               this._Button()
             }
-          </ImageBackground>
         </View>
       </View>
     );
@@ -182,6 +204,7 @@ const styles = StyleSheet.create({
   },
   subInnerWrapper:{
     flex: 1,
+    marginTop:10,
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
@@ -191,8 +214,8 @@ const styles = StyleSheet.create({
     paddingBottom:10,
   },
   logo:{
-    width:130,
-    height:130,
+    width:150,
+    height:150,
   },
 })
 
@@ -209,6 +232,8 @@ const mapDispatchToProps = (dispatch) => {
       onDispatchIsLogin: (flag) => dispatch(isLogin(flag)),
       onDispatchGetUserDetails: (data) => dispatch(getUserDetails(data)),
       onDispatchUpdateUser: (id) => dispatch(updateUser(id)),
+      onDispatchServices: (params) => dispatch(services(params)),
+      onDispatchCities: (params) => dispatch(cities(params))
   }
 }
 
